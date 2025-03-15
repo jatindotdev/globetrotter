@@ -21,22 +21,21 @@ app.get("/geocode", async (c) => {
       throw new Error("Failed to fetch location data from Google API");
     }
 
-    const data = await response.json();
+    const data: {
+      status: string;
+      results: google.maps.GeocoderResult[];
+    } = await response.json();
 
     let city = "Unknown location";
-    if (data.status === "OK") {
-      for (const result of data.results) {
-        for (const component of result.address_components) {
-          if (component.types.includes("locality")) {
-            city = component.long_name;
-            break;
-          }
-          if (component.types.includes("administrative_area_level_1")) {
-            city = component.long_name;
-          }
-        }
 
-        if (city !== "Unknown location") break;
+    if (data.status === "OK") {
+      const addressComponents = data.results.find(
+        (result) =>
+          result.types.includes("locality") &&
+          result.types.includes("political")
+      );
+      if (addressComponents) {
+        city = addressComponents.formatted_address;
       }
     }
 

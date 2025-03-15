@@ -5,7 +5,7 @@ import { env } from "@/env";
 import { APIProvider, Map } from "@vis.gl/react-google-maps";
 import confetti from "canvas-confetti";
 import { ArrowRight, Heart, RefreshCcw, Rotate3D } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import {
@@ -38,7 +38,7 @@ const LOCATIONS = [
     radius: 15000, // 15km radius
   },
   {
-    name: "New York City",
+    name: "New York",
     lat: 40.7128,
     lng: -74.006,
     clue1: "This city never sleeps",
@@ -106,10 +106,11 @@ export default function GameView() {
   const handleCheckGuess = useCallback(() => {
     if (!guessMarker || !selectedCity) return;
 
-    const isCorrect =
-      selectedCity.toLowerCase() === currentLocation.name.toLowerCase() ||
-      selectedCity.toLowerCase().includes(currentLocation.name.toLowerCase()) ||
-      currentLocation.name.toLowerCase().includes(selectedCity.toLowerCase());
+    // selectedCity: New York, NY, USA
+
+    const isCorrect = selectedCity
+      .toLowerCase()
+      .includes(currentLocation.name.toLowerCase());
 
     setGuessResult(isCorrect ? "correct" : "incorrect");
 
@@ -172,6 +173,12 @@ export default function GameView() {
     setShowSecondClue(!showSecondClue);
   };
 
+  const accuracyRate = useMemo(() => {
+    const totalAttempts = score.correct + score.incorrect;
+    if (totalAttempts === 0) return 0;
+    return Math.round((score.correct / totalAttempts) * 100);
+  }, [score]);
+
   const renderLives = () => {
     return Array(lives)
       .fill(0)
@@ -209,11 +216,23 @@ export default function GameView() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-2">
-              <p className="font-semibold">
-                Score: {score.correct} correct / {score.incorrect} incorrect
-              </p>
-              <div className="flex items-center gap-1">
-                <span className="text-sm font-medium mr-1">Lives:</span>
+              <div className="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                <div className="text-center flex-1">
+                  <p className="text-2xl font-bold text-green-500">
+                    {score.correct}
+                  </p>
+                  <p className="text-xs text-gray-600">Correct</p>
+                </div>
+                <div className="h-8 w-px bg-gray-200" />
+                <div className="text-center flex-1">
+                  <p className="text-2xl font-bold text-red-500">
+                    {score.incorrect}
+                  </p>
+                  <p className="text-xs text-gray-600">Incorrect</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-center gap-1 mt-4">
+                <p className="text-sm text-gray-600 mr-2">Lives:</p>
                 {renderLives()}
               </div>
             </div>
@@ -292,18 +311,47 @@ export default function GameView() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showGameOverDialog} onOpenChange={setShowGameOverDialog}>
-        <DialogContent className="sm:max-w-md">
+      <Dialog open={showGameOverDialog}>
+        <DialogContent className="sm:max-w-md" showCloseButton={false}>
           <DialogHeader>
-            <DialogTitle className="text-red-500">Game Over! 😢</DialogTitle>
-            <DialogDescription>
-              You've used all your lives. Your final score was {score.correct}{" "}
-              correct answers.
+            <div className="flex items-center justify-center mb-4">
+              <div className="text-6xl">🏆</div>
+            </div>
+            <DialogTitle className="text-center text-2xl font-bold bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
+              Game Over!
+            </DialogTitle>
+            <DialogDescription className="text-center mt-4" asChild>
+              <div className="space-y-4">
+                <div className="p-4 bg-slate-100 rounded-lg">
+                  <p className="text-lg">Final Score</p>
+                  <div className="flex justify-center gap-6 mt-2">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-green-500">
+                        {score.correct}
+                      </p>
+                      <p className="text-sm text-gray-600">Correct</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-red-500">
+                        {score.incorrect}
+                      </p>
+                      <p className="text-sm text-gray-600">Incorrect</p>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Accuracy Rate: {accuracyRate}%
+                </p>
+              </div>
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex flex-col gap-4 mt-4">
-            <Button onClick={restartGame} className="w-full">
-              Play Again <RefreshCcw size={16} className="ml-2" />
+          <DialogFooter>
+            <Button
+              onClick={restartGame}
+              className="w-full bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 transition-all"
+            >
+              Play Again
+              <RefreshCcw size={16} className="ml-2 animate-spin-once" />
             </Button>
           </DialogFooter>
         </DialogContent>
