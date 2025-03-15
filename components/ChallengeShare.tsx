@@ -1,110 +1,102 @@
-import React, { useState } from 'react';
-import { useUser } from '@/lib/UserContext';
-import { Button } from '@/components/ui/button';
+"use client";
+
+import { Share2 } from "lucide-react";
+import { useState } from "react";
+import { Button } from "./ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog';
-import { Share2 } from 'lucide-react';
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
 
-export default function ChallengeShare() {
-  const { user } = useUser();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
+interface ChallengeShareProps {
+  userName: string;
+  score: number;
+  correctAnswers: number;
+  totalAnswers: number;
+}
 
-  if (!user) {
-    return null;
-  }
+export default function ChallengeShare({
+  userName,
+  score,
+  correctAnswers,
+  totalAnswers,
+}: ChallengeShareProps) {
+  const [shareLink, setShareLink] = useState<string>("");
 
-  // Generate the invitation URL
-  const generateInviteUrl = () => {
+  const generateShareLink = () => {
     const baseUrl = window.location.origin;
-    return `${baseUrl}?inviter=${encodeURIComponent(user.id)}`;
+
+    const challenge = {
+      userName,
+      score,
+      correctAnswers,
+      totalAnswers,
+      timestamp: new Date().toISOString(),
+    };
+
+    const encodedData = btoa(JSON.stringify(challenge));
+
+    const shareableUrl = `${baseUrl}/game?challenge=${encodedData}`;
+    setShareLink(shareableUrl);
+
+    return shareableUrl;
   };
 
-  // Generate WhatsApp share URL
-  const generateWhatsAppUrl = () => {
-    const inviteUrl = generateInviteUrl();
-    const message = encodeURIComponent(
-      `🧩 ${user.username} has challenged you to beat their score of ${user.score} in the Globetrotter Challenge! 🌎 Can you guess these world destinations? Play now: ${inviteUrl}`
+  const shareToWhatsApp = () => {
+    const url = generateShareLink();
+    const whatsappText = `I scored ${score} points (${correctAnswers}/${totalAnswers} correct) on GlobeTrotter! Can you beat me? ${url}`;
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(whatsappText)}`,
+      "_blank"
     );
-    return `https://wa.me/?text=${message}`;
   };
 
-  // Copy invitation link to clipboard
-  const copyInviteLink = async () => {
-    try {
-      await navigator.clipboard.writeText(generateInviteUrl());
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy link', error);
-    }
-  };
-
-  // Generate a preview image based on user's score
-  const renderScorePreview = () => {
-    return (
-      <div className="bg-gradient-to-br from-blue-500 to-purple-600 w-full aspect-[2/1] rounded-lg p-6 text-white flex flex-col justify-center">
-        <div className="text-center">
-          <h3 className="text-xl font-bold mb-2">Globetrotter Challenge</h3>
-          <p className="mb-4">{user.username}'s Score</p>
-          <div className="text-4xl font-bold mb-2">{user.score}</div>
-          <p>{user.correctAnswers} correct out of {user.totalAnswers} destinations</p>
-        </div>
-      </div>
-    );
+  const copyShareLink = async () => {
+    const url = generateShareLink();
+    await navigator.clipboard.writeText(url);
   };
 
   return (
-    <>
-      <Button
-        onClick={() => setIsDialogOpen(true)}
-        variant="secondary"
-        className="flex items-center gap-2"
-      >
-        <Share2 size={16} />
-        Challenge a Friend
-      </Button>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="default" className="flex items-center gap-2">
+          Challenge a Friend <Share2 size={16} />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Share Your Score!</DialogTitle>
+        </DialogHeader>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Challenge Your Friends!</DialogTitle>
-            <DialogDescription>
-              Share your Globetrotter Challenge with friends and see if they can beat your score!
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-4 space-y-4">
-            {renderScorePreview()}
-
-            <div className="flex flex-col space-y-2">
-              <Button
-                onClick={() => window.open(generateWhatsAppUrl(), '_blank')}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                Share on WhatsApp
-              </Button>
-
-              <Button
-                onClick={copyInviteLink}
-                variant="outline"
-              >
-                {isCopied ? 'Link Copied!' : 'Copy Challenge Link'}
-              </Button>
-            </div>
+        <div className="p-4 my-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold">
+              {userName}&apos;s Challenge
+            </h3>
+            <p className="text-sm mt-2">Score: {score} points</p>
+            <p className="text-sm">
+              Answered: {correctAnswers} correct out of {totalAnswers}
+            </p>
           </div>
+        </div>
 
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+        <div className="flex flex-col gap-3">
+          <Button onClick={shareToWhatsApp} className="flex items-center gap-2">
+            Share to WhatsApp
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={copyShareLink}
+            className="flex items-center gap-2"
+          >
+            Copy Challenge Link
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

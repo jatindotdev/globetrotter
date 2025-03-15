@@ -27,6 +27,7 @@ export const trivia = pgTable("trivia", {
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   username: varchar("username", { length: 100 }).notNull().unique(),
+  password: text("password").notNull(), // Hashed password
   score: serial("score").default(0).notNull(),
   correctAnswers: serial("correct_answers").default(0).notNull(),
   totalAnswers: serial("total_answers").default(0).notNull(),

@@ -123,6 +123,7 @@ async function main() {
     await sql`CREATE TABLE IF NOT EXISTS users (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       username VARCHAR(100) NOT NULL UNIQUE,
+      password TEXT NOT NULL,
       score INTEGER NOT NULL DEFAULT 0,
       correct_answers INTEGER NOT NULL DEFAULT 0,
       total_answers INTEGER NOT NULL DEFAULT 0,

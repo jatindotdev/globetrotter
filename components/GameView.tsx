@@ -5,7 +5,9 @@ import { env } from "@/env";
 import { APIProvider, Map } from "@vis.gl/react-google-maps";
 import confetti from "canvas-confetti";
 import { ArrowRight, Heart, RefreshCcw, Rotate3D } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import ChallengeShare from "./ChallengeShare";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import {
@@ -17,46 +19,41 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 
-const LOCATIONS = [
-  {
-    name: "Paris",
-    lat: 48.8566,
-    lng: 2.3522,
-    clue1: 'This city is known as the "City of Light"',
-    clue2: "It has a famous tower that was built for a World Fair",
-    funFact:
-      "The Eiffel Tower was originally intended to be a temporary installation.",
-    radius: 10000, // 10km radius for checking if the guess is correct
-  },
-  {
-    name: "Tokyo",
-    lat: 35.6762,
-    lng: 139.6503,
-    clue1: "This city hosted the Olympics twice",
-    clue2: "It has the busiest pedestrian crossing in the world",
-    funFact: "Shinjuku Station is the busiest train station in the world.",
-    radius: 15000, // 15km radius
-  },
-  {
-    name: "New York",
-    lat: 40.7128,
-    lng: -74.006,
-    clue1: "This city never sleeps",
-    clue2: "It has a famous statue that was a gift from France",
-    funFact: "The New York Public Library has over 50 million items.",
-    radius: 8000,
-  },
-];
-
-const INITIAL_LIVES = 7;
+const INITIAL_LIVES = 1;
 
 type GameScore = {
   correct: number;
   incorrect: number;
 };
 
-export default function GameView() {
-  const [currentLocation, setCurrentLocation] = useState(LOCATIONS[0]);
+type Destination = {
+  id: number;
+  city: string;
+  country: string;
+  clues: string[];
+  funFact?: string;
+};
+
+type Challenge = {
+  userName: string;
+  score: number;
+  correctAnswers: number;
+  totalAnswers: number;
+  timestamp: string;
+};
+
+interface GameViewProps {
+  challenge?: Challenge;
+}
+
+export default function GameView({ challenge }: GameViewProps) {
+  const [user, setUser] = useState<{ id: string; username: string } | null>(
+    null
+  );
+  const router = useRouter();
+  const [challengeDialogOpen, setChallengeDialogOpen] = useState(false);
+  const [currentDestination, setCurrentDestination] =
+    useState<Destination | null>(null);
   const [showSecondClue, setShowSecondClue] = useState(false);
   const [guessMarker, setGuessMarker] = useState<{
     lat: number;
@@ -71,6 +68,46 @@ export default function GameView() {
   const [showResultDialog, setShowResultDialog] = useState(false);
   const [lives, setLives] = useState(INITIAL_LIVES);
   const [showGameOverDialog, setShowGameOverDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentFunFact, setCurrentFunFact] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error("Failed to parse stored user", e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (challenge) {
+      setChallengeDialogOpen(true);
+    }
+  }, [challenge]);
+
+  useEffect(() => {
+    fetchRandomDestination();
+  }, []);
+
+  const fetchRandomDestination = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/destination/random");
+      if (!response.ok) {
+        throw new Error("Failed to fetch destination");
+      }
+
+      const data = await response.json();
+      setCurrentDestination(data);
+    } catch (error) {
+      console.error("Error fetching destination:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const fetchCityFromCoordinates = useCallback(
     async (lat: number, lng: number) => {
@@ -103,39 +140,87 @@ export default function GameView() {
     [fetchCityFromCoordinates]
   );
 
-  const handleCheckGuess = useCallback(() => {
-    if (!guessMarker || !selectedCity) return;
+  const handleCheckGuess = useCallback(async () => {
+    if (!currentDestination || !guessMarker || !selectedCity) return;
 
-    // selectedCity: New York, NY, USA
+    try {
+      setIsLoading(true);
 
-    const isCorrect = selectedCity
-      .toLowerCase()
-      .includes(currentLocation.name.toLowerCase());
+      const response = await fetch("/api/destination/check", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          destinationId: currentDestination.id,
+          guess: selectedCity,
+          userId: user?.id,
+        }),
+      });
 
-    setGuessResult(isCorrect ? "correct" : "incorrect");
+      if (!response.ok) {
+        throw new Error("Failed to check guess");
+      }
 
-    if (isCorrect) {
-      setScore((prev) => ({
-        correct: prev.correct + 1,
-        incorrect: prev.incorrect,
-      }));
-      triggerConfetti();
-    } else {
-      const newLives = lives - 1;
-      setLives(newLives);
-      setScore((prev) => ({
-        correct: prev.correct,
-        incorrect: prev.incorrect + 1,
-      }));
+      const result = await response.json();
 
-      if (newLives <= 0) {
-        setShowGameOverDialog(true);
-        return;
+      setGuessResult(result.correct ? "correct" : "incorrect");
+      setCurrentFunFact(result.funFact);
+
+      if (result.correct) {
+        setScore((prev) => ({
+          correct: prev.correct + 1,
+          incorrect: prev.incorrect,
+        }));
+        triggerConfetti();
+      } else {
+        const newLives = lives - 1;
+        const newIncorrectScore = score.incorrect + 1;
+
+        setLives(newLives);
+        setScore((prev) => ({
+          correct: prev.correct,
+          incorrect: newIncorrectScore,
+        }));
+
+        if (newLives <= 0) {
+          handleGameOver(score.correct, score.correct + newIncorrectScore);
+          return;
+        }
+      }
+
+      setShowResultDialog(true);
+    } catch (error) {
+      console.error("Error checking guess:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentDestination, guessMarker, selectedCity, lives, user?.id]);
+
+  const handleGameOver = async (
+    correctAnswers: number,
+    totalAnswers: number
+  ) => {
+    if (user) {
+      try {
+        await fetch("/api/game/save", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            correctAnswers,
+            totalAnswers,
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to save game results:", error);
       }
     }
 
-    setShowResultDialog(true);
-  }, [currentLocation.name, guessMarker, selectedCity, lives]);
+    setShowGameOverDialog(true);
+  };
 
   const triggerConfetti = () => {
     confetti({
@@ -146,20 +231,12 @@ export default function GameView() {
   };
 
   const handleNextLocation = () => {
-    let nextIndex;
-    do {
-      nextIndex = Math.floor(Math.random() * LOCATIONS.length);
-    } while (
-      LOCATIONS[nextIndex].name === currentLocation.name &&
-      LOCATIONS.length > 1
-    );
-
-    setCurrentLocation(LOCATIONS[nextIndex]);
     setGuessMarker(null);
     setSelectedCity(null);
     setGuessResult(null);
     setShowSecondClue(false);
     setShowResultDialog(false);
+    fetchRandomDestination();
   };
 
   const restartGame = () => {
@@ -173,19 +250,28 @@ export default function GameView() {
     setShowSecondClue(!showSecondClue);
   };
 
-  const accuracyRate = useMemo(() => {
-    const totalAttempts = score.correct + score.incorrect;
-    if (totalAttempts === 0) return 0;
-    return Math.round((score.correct / totalAttempts) * 100);
-  }, [score]);
-
   const renderLives = () => {
-    return Array(lives)
+    return Array(INITIAL_LIVES)
       .fill(0)
       .map((_, index) => (
-        <Heart key={index} className="h-5 w-5 fill-red-500 text-red-500" />
+        <Heart
+          key={index}
+          className={`h-5 w-5 ${
+            index < lives
+              ? "fill-red-500 text-red-500"
+              : "fill-none text-gray-300"
+          }`}
+        />
       ));
   };
+
+  if (!currentDestination && isLoading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        <p className="text-lg">Loading game...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-full relative">
@@ -204,11 +290,10 @@ export default function GameView() {
             guessMarker={guessMarker}
             selectedCity={selectedCity}
             onCheckGuess={handleCheckGuess}
-            isLoading={isLoadingCity}
+            isLoading={isLoadingCity || isLoading}
           />
         </Map>
       </APIProvider>
-
       <div className="absolute top-4 left-4 flex flex-col gap-4 z-10">
         <Card className="w-80">
           <CardHeader>
@@ -231,81 +316,71 @@ export default function GameView() {
                   <p className="text-xs text-gray-600">Incorrect</p>
                 </div>
               </div>
-              <div className="flex items-center justify-center gap-1 mt-4">
-                <p className="text-sm text-gray-600 mr-2">Lives:</p>
+              <div className="flex items-center gap-1 mt-4">
+                <span className="text-sm font-medium mr-1">Lives:</span>
                 {renderLives()}
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="w-80">
-          <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-medium">Hint</CardTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleClue}
-              className="h-8 w-8 hover:scale-110 transition-transform duration-200"
-            >
-              <Rotate3D size={16} />
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <p className="text-lg font-medium">
-              {showSecondClue ? currentLocation.clue2 : currentLocation.clue1}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Dialog open={showResultDialog}>
-        <DialogContent className="sm:max-w-md" showCloseButton={false}>
-          <DialogHeader>
-            <div className="flex items-center justify-center">
-              {guessResult === "correct" ? (
-                <div className="text-4xl animate-bounce">🎉</div>
-              ) : (
-                <div className="text-4xl">😢</div>
+              {user && (
+                <p className="text-sm text-gray-500">
+                  Logged in as: {user.username}
+                </p>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {currentDestination && !challengeDialogOpen && (
+          <Card className="w-80">
+            <CardHeader className="pb-2 flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-medium">Hint</CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleClue}
+                className="h-8 w-8 hover:scale-110 transition-transform duration-200"
+              >
+                <Rotate3D size={16} />
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg font-medium">
+                {showSecondClue
+                  ? currentDestination.clues[1] || "No second clue available"
+                  : currentDestination.clues[0] || "No clue available"}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      <Dialog open={showResultDialog} onOpenChange={setShowResultDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
             <DialogTitle
-              className={`text-center text-xl ${
-                guessResult === "correct"
-                  ? "text-green-500 font-bold"
-                  : "text-red-500 font-bold"
-              }`}
+              className={
+                guessResult === "correct" ? "text-green-500" : "text-red-500"
+              }
             >
-              {guessResult === "correct" ? "Excellent!" : "Not Quite Right"}
+              {guessResult === "correct"
+                ? "Correct Answer! 🎉"
+                : "Incorrect Answer! 😢"}
             </DialogTitle>
-            {guessResult === "incorrect" && (
-              <DialogDescription className="text-center p-2 bg-slate-100 rounded-lg mt-4">
-                The correct location was{" "}
-                <span className="font-bold text-primary">
-                  {currentLocation.name}
-                </span>
-                , but you guessed{" "}
-                <span className="font-bold text-red-500">{selectedCity}</span>
+
+            {currentDestination && guessResult === "incorrect" && (
+              <DialogDescription>
+                The location was {currentDestination.city}, but you guessed{" "}
+                {selectedCity}
               </DialogDescription>
             )}
           </DialogHeader>
 
-          <div className="p-4 bg-primary/5 rounded-lg">
-            <h4 className="font-semibold text-primary mb-2">
-              Did you know? 🤔
-            </h4>
-            <p className="text-sm text-muted-foreground">
-              {currentLocation.funFact}
-            </p>
-          </div>
+          {currentFunFact && (
+            <p className="my-4 text-center">{currentFunFact}</p>
+          )}
 
           <DialogFooter>
-            <Button
-              onClick={handleNextLocation}
-              className="w-full bg-primary hover:bg-primary/90"
-            >
-              <span>Next Challenge</span>
-              <ArrowRight size={16} />
+            <Button onClick={handleNextLocation} className="w-full">
+              Next Challenge <ArrowRight size={16} className="ml-2" />
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -339,23 +414,73 @@ export default function GameView() {
                     </div>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Accuracy Rate: {accuracyRate}%
-                </p>
               </div>
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button
-              onClick={restartGame}
-              className="w-full bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 transition-all"
-            >
-              Play Again
-              <RefreshCcw size={16} className="ml-2 animate-spin-once" />
+          <div className="flex flex-col gap-4 mt-4">
+            {user && (
+              <ChallengeShare
+                userName={user.username}
+                score={score.correct * 10}
+                correctAnswers={score.correct}
+                totalAnswers={score.correct + score.incorrect}
+              />
+            )}
+            <Button onClick={restartGame} variant="secondary">
+              Play Again <RefreshCcw size={16} className="ml-2" />
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
+      {challenge !== undefined && (
+        <Dialog open={challengeDialogOpen}>
+          <DialogContent className="sm:max-w-md" showCloseButton={false}>
+            <DialogHeader>
+              <DialogTitle className="text-center text-2xl font-bold">
+                🎯 Challenge from {challenge.userName}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
+                <div className="text-center flex-1">
+                  <p className="text-2xl font-bold text-green-500">
+                    {challenge.correctAnswers}
+                  </p>
+                  <p className="text-xs text-gray-600">Correct</p>
+                </div>
+                <div className="h-8 w-px bg-gray-200" />
+                <div className="text-center flex-1">
+                  <p className="text-2xl font-bold text-red-500">
+                    {challenge.totalAnswers - challenge.correctAnswers}
+                  </p>
+                  <p className="text-xs text-gray-600">Incorrect</p>
+                </div>
+              </div>
+              <p className="text-sm text-center font-medium mt-2">
+                Can you beat this score?
+              </p>
+            </div>
+            <DialogFooter className="flex flex-row gap-4">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  router.push("/");
+                }}
+                className="flex-1"
+              >
+                Go Back
+              </Button>
+              <Button
+                onClick={() => setChallengeDialogOpen(false)}
+                className="flex-1"
+              >
+                Start Game
+                <ArrowRight size={16} />
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
