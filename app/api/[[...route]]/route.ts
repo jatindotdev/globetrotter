@@ -229,7 +229,7 @@ app.get("/destination/random", async (c) => {
 app.post("/destination/check", async (c) => {
   try {
     const body = await c.req.json();
-    const { destinationId, guess, userId } = body;
+    const { destinationId, guess } = body;
 
     if (!destinationId || !guess) {
       return c.json({ error: "Missing destination ID or guess" }, 400);
