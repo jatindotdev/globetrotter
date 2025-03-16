@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Globetrotter
+
+Globetrotter is an interactive geography game that challenges your knowledge of world locations. Test your geography skills by guessing cities based on clues and improve your global awareness.
+
+![Globetrotter Game Screenshot](https://via.placeholder.com/800x400?text=Globetrotter+Screenshot)
+
+## Features
+
+- 🗺️ **Interactive Map Experience**: Navigate a fully interactive world map powered by Google Maps API
+- 🎮 **Geography-based Challenges**: Receive clues about cities around the world and pinpoint their location
+- 🏆 **Score Tracking**: Track your performance with correct/incorrect guesses and high scores
+- 👥 **User Authentication**: Create an account to save your progress and high scores
+- 💡 **Multiple Clues**: Get additional hints when you need them
+- 🎉 **Visual Feedback**: Enjoy confetti celebrations when you guess correctly
+- 🔗 **Challenge Friends**: Share your high scores and challenge friends to beat them
+
+## Tech Stack
+
+### Frontend
+
+- **Next.js 13+** with App Router for modern React applications
+- **React** for component-based UI development
+- **TypeScript** for type safety and better developer experience
+- **Tailwind CSS** for responsive and utility-first styling
+- **Shadcn UI** for beautiful, accessible UI components
+- **@vis.gl/react-google-maps** for interactive map integration
+- **Canvas Confetti** for fun visual effects
+
+### Backend
+
+- **Next.js API Routes** for serverless backend functionality
+- **PostgreSQL** for data persistence
+- **Drizzle ORM** for database management
+- **NextAuth.js** for authentication
+
+### Infrastructure
+
+- **Vercel** for hosting and deployment
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js 18.x or later
+- Google Maps API key
+- PostgreSQL database (local or hosted)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```bash
+   git clone https://github.com/yourusername/globetrotter.git
+   cd globetrotter
+   ```
 
-## Learn More
+2. Install dependencies:
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Create a `.env.local` file in the root directory with the following variables:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```
+   # Database
+   DATABASE_URL="your-database-connection-string"
 
-## Deploy on Vercel
+   # Google Maps
+   NEXT_PUBLIC_MAPS_API="your-google-maps-api-key-for-client"
+   MAPS_BACKEND_API="your-maps-backend-api-key-for-server"
+   JWT_SECRET="your-jwt-secret"
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. Run the development server:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   pnpm dev
+   # or
+   bun dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) with your browser to start playing!
+
+## Game Instructions
+
+1. You'll be presented with clues about a city somewhere in the world
+2. Place a marker on the map where you think the city is located
+3. Click "Check Answer" to verify your guess
+4. Earn points for correct answers and track your high score
+5. You have three lives per game session
+6. Try to get as many correct answers as possible!
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
