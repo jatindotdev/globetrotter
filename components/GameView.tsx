@@ -22,7 +22,7 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 
-const INITIAL_LIVES = 1;
+const INITIAL_LIVES = 3;
 
 type GameScore = {
   correct: number;
@@ -339,7 +339,7 @@ export default function GameView() {
                     Logged in as: {user.username}
                   </p>
                   <p className="text-sm text-gray-500">
-                    Last saved score: {user.score}
+                    Highest score: {user.score}
                   </p>
                 </>
               )}
@@ -429,7 +429,7 @@ export default function GameView() {
                   <div className="flex justify-center gap-6 mt-2">
                     <div className="text-center">
                       <p className="text-2xl font-bold text-green-500">
-                        {user?.score || 0}
+                        {user?.score || score.correct * 10 || 0}
                       </p>
                       <p className="text-sm text-gray-600">Pts</p>
                     </div>
