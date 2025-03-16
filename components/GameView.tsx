@@ -431,13 +431,7 @@ export default function GameView() {
                       <p className="text-2xl font-bold text-green-500">
                         {user?.score || 0}
                       </p>
-                      <p className="text-sm text-gray-600">Correct</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-red-500">
-                        {user?.totalAnswers || 0 - (user?.correctAnswers || 0)}
-                      </p>
-                      <p className="text-sm text-gray-600">Incorrect</p>
+                      <p className="text-sm text-gray-600">Pts</p>
                     </div>
                   </div>
                 </div>
@@ -448,9 +442,9 @@ export default function GameView() {
             {user && (
               <ChallengeShare
                 userId={user.id}
-                score={score.correct * 10}
-                correctAnswers={score.correct}
-                incorrectAnswers={score.incorrect}
+                score={user.score}
+                correctAnswers={user.correctAnswers}
+                incorrectAnswers={user.totalAnswers - user.correctAnswers}
               />
             )}
             {!isAuthenticated && (
@@ -490,16 +484,14 @@ export default function GameView() {
               <div className="flex justify-between items-center p-2 bg-slate-50 rounded-lg">
                 <div className="text-center flex-1">
                   <p className="text-2xl font-bold text-green-500">
-                    {challenge.correctAnswers}
+                    {challenge.score}
                   </p>
-                  <p className="text-xs text-gray-600">Correct</p>
+                  <p className="text-xs text-gray-600">Pts</p>
                 </div>
                 <div className="h-8 w-px bg-gray-200" />
                 <div className="text-center flex-1">
-                  <p className="text-2xl font-bold text-red-500">
-                    {challenge.totalAnswers - challenge.correctAnswers}
-                  </p>
-                  <p className="text-xs text-gray-600">Incorrect</p>
+                  <p className="text-2xl font-bold">{challenge.totalAnswers}</p>
+                  <p className="text-xs text-gray-600">Total Answers</p>
                 </div>
               </div>
               <p className="text-sm text-center font-medium mt-2">
