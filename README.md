@@ -2,7 +2,10 @@
 
 Globetrotter is an interactive geography game that challenges your knowledge of world locations. Test your geography skills by guessing cities based on clues and improve your global awareness.
 
-![Globetrotter Game Screenshot](https://via.placeholder.com/800x400?text=Globetrotter+Screenshot)
+<img src="https://github.com/user-attachments/assets/3864e192-f1f4-4a7e-8920-8ee004e58094" width="500" />
+
+<img src="https://github.com/user-attachments/assets/a42a7f8f-0c79-49b5-9397-d00bf1071a9e" width="500" />
+
 
 ## Features
 
