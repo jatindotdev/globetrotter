@@ -1,4 +1,5 @@
 "use client";
+
 import { useAuth } from "@/lib/context/auth-context";
 import { useState } from "react";
 import { Button } from "./ui/button";
@@ -30,7 +31,8 @@ export default function UserAuth({ onAuthSuccess }: UserAuthProps) {
     setIsLoading(true);
 
     try {
-      const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/register";
+      const endpoint =
+        mode === "login" ? "/api/auth/login" : "/api/auth/register";
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -45,7 +47,6 @@ export default function UserAuth({ onAuthSuccess }: UserAuthProps) {
       if (!response.ok) {
         throw new Error(data.error || "Authentication failed");
       }
-
 
       login(data.token);
 
