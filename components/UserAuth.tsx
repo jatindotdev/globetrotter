@@ -1,25 +1,23 @@
 "use client";
-
+import { useAuth } from "@/lib/context/auth-context";
 import { useState } from "react";
 import { Button } from "./ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
 import { Input } from "./ui/input";
 
 type AuthMode = "login" | "register";
 
-export default function UserAuth() {
+interface UserAuthProps {
+  onAuthSuccess?: () => void;
+}
+
+export default function UserAuth({ onAuthSuccess }: UserAuthProps) {
   const [mode, setMode] = useState<AuthMode>("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const { login } = useAuth();
 
   const toggleMode = () => {
     setMode(mode === "login" ? "register" : "login");
@@ -32,8 +30,7 @@ export default function UserAuth() {
     setIsLoading(true);
 
     try {
-      const endpoint =
-        mode === "login" ? "/api/auth/login" : "/api/auth/register";
+      const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/register";
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -49,17 +46,12 @@ export default function UserAuth() {
         throw new Error(data.error || "Authentication failed");
       }
 
-      // On successful auth, save user info to localStorage
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: data.id,
-          username: data.username,
-        })
-      );
 
-      // Refresh the page to show the authenticated state
-      window.location.href = "/game";
+      login(data.token);
+
+      if (onAuthSuccess) {
+        onAuthSuccess();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to authenticate");
     } finally {
@@ -68,61 +60,47 @@ export default function UserAuth() {
   };
 
   return (
-    <Card className="w-[350px]">
-      <CardHeader>
-        <CardTitle>{mode === "login" ? "Login" : "Register"}</CardTitle>
-        <CardDescription>
-          {mode === "login"
-            ? "Enter your credentials to continue"
-            : "Create an account to start playing"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="username" className="text-sm font-medium">
-              Username
-            </label>
-            <Input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Your username"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">
-              Password
-            </label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Your password"
-              required
-            />
-          </div>
-
-          {error && <p className="text-sm text-red-500">{error}</p>}
-
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading
-              ? "Loading..."
-              : mode === "login"
-              ? "Login"
-              : "Create Account"}
-          </Button>
-        </form>
-      </CardContent>
-      <CardFooter>
-        <Button variant="link" onClick={toggleMode} className="w-full">
-          {mode === "login"
-            ? "Don't have an account? Register"
-            : "Already have an account? Login"}
+    <>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <label htmlFor="username" className="text-sm font-medium">
+            Username
+          </label>
+          <Input
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Your username"
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="password" className="text-sm font-medium">
+            Password
+          </label>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Your password"
+            required
+          />
+        </div>
+        {error && <p className="text-sm text-red-500">{error}</p>}
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading
+            ? "Loading..."
+            : mode === "login"
+            ? "Login"
+            : "Create Account"}
         </Button>
-      </CardFooter>
-    </Card>
+      </form>
+      <Button variant="link" onClick={toggleMode} className="w-full mt-2">
+        {mode === "login"
+          ? "Don't have an account? Register"
+          : "Already have an account? Login"}
+      </Button>
+    </>
   );
 }

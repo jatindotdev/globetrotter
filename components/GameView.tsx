@@ -1,11 +1,14 @@
 "use client";
 
 import { MarkerControl } from "@/components/MarkerControl";
+import UserAuth from "@/components/UserAuth";
 import { env } from "@/env";
+import { useAuth } from "@/lib/context/auth-context";
+import type { User } from "@/lib/db/schema";
 import { APIProvider, Map } from "@vis.gl/react-google-maps";
 import confetti from "canvas-confetti";
 import { ArrowRight, Heart, RefreshCcw, Rotate3D } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import ChallengeShare from "./ChallengeShare";
 import { Button } from "./ui/button";
@@ -39,19 +42,25 @@ type Challenge = {
   score: number;
   correctAnswers: number;
   totalAnswers: number;
-  timestamp: string;
 };
 
-interface GameViewProps {
-  challenge?: Challenge;
-}
+const fetchUser = async (userId: string): Promise<User> => {
+  const response = await fetch(`/api/user/${userId}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch user");
+  }
+  return response.json();
+};
 
-export default function GameView({ challenge }: GameViewProps) {
-  const [user, setUser] = useState<{ id: string; username: string } | null>(
-    null
-  );
+export default function GameView() {
+  const [challenge, setChallenge] = useState<Challenge | undefined>(undefined);
+  const searchParams = useSearchParams();
+  const challengeParam = searchParams.get("challenge");
+
+  const { user, token, isAuthenticated, refreshUser } = useAuth();
   const router = useRouter();
   const [challengeDialogOpen, setChallengeDialogOpen] = useState(false);
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [currentDestination, setCurrentDestination] =
     useState<Destination | null>(null);
   const [showSecondClue, setShowSecondClue] = useState(false);
@@ -64,7 +73,10 @@ export default function GameView({ challenge }: GameViewProps) {
   const [guessResult, setGuessResult] = useState<
     "correct" | "incorrect" | null
   >(null);
-  const [score, setScore] = useState<GameScore>({ correct: 0, incorrect: 0 });
+  const [score, setScore] = useState<GameScore>({
+    correct: 0,
+    incorrect: 0,
+  });
   const [showResultDialog, setShowResultDialog] = useState(false);
   const [lives, setLives] = useState(INITIAL_LIVES);
   const [showGameOverDialog, setShowGameOverDialog] = useState(false);
@@ -72,14 +84,23 @@ export default function GameView({ challenge }: GameViewProps) {
   const [currentFunFact, setCurrentFunFact] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
+    if (!challengeParam?.trim()) return;
+
+    const fetchChallenge = async () => {
       try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error("Failed to parse stored user", e);
+        const data = await fetchUser(challengeParam);
+        console.log("Fetched challenge data:", data);
+        setChallenge({
+          userName: data.username,
+          score: data.score,
+          correctAnswers: data.correctAnswers,
+          totalAnswers: data.totalAnswers,
+        });
+      } catch (error) {
+        console.error("Error fetching challenge:", error);
       }
-    }
+    };
+    fetchChallenge();
   }, []);
 
   useEffect(() => {
@@ -99,7 +120,6 @@ export default function GameView({ challenge }: GameViewProps) {
       if (!response.ok) {
         throw new Error("Failed to fetch destination");
       }
-
       const data = await response.json();
       setCurrentDestination(data);
     } catch (error) {
@@ -113,13 +133,10 @@ export default function GameView({ challenge }: GameViewProps) {
     async (lat: number, lng: number) => {
       try {
         setIsLoadingCity(true);
-
         const response = await fetch(`/api/geocode?lat=${lat}&lng=${lng}`);
-
         if (!response.ok) {
           throw new Error("Failed to fetch location data");
         }
-
         const data = await response.json();
         setSelectedCity(data.city);
       } catch (error) {
@@ -142,10 +159,8 @@ export default function GameView({ challenge }: GameViewProps) {
 
   const handleCheckGuess = useCallback(async () => {
     if (!currentDestination || !guessMarker || !selectedCity) return;
-
     try {
       setIsLoading(true);
-
       const response = await fetch("/api/destination/check", {
         method: "POST",
         headers: {
@@ -157,16 +172,12 @@ export default function GameView({ challenge }: GameViewProps) {
           userId: user?.id,
         }),
       });
-
       if (!response.ok) {
         throw new Error("Failed to check guess");
       }
-
       const result = await response.json();
-
       setGuessResult(result.correct ? "correct" : "incorrect");
       setCurrentFunFact(result.funFact);
-
       if (result.correct) {
         setScore((prev) => ({
           correct: prev.correct + 1,
@@ -176,19 +187,16 @@ export default function GameView({ challenge }: GameViewProps) {
       } else {
         const newLives = lives - 1;
         const newIncorrectScore = score.incorrect + 1;
-
         setLives(newLives);
         setScore((prev) => ({
           correct: prev.correct,
           incorrect: newIncorrectScore,
         }));
-
         if (newLives <= 0) {
           handleGameOver(score.correct, score.correct + newIncorrectScore);
           return;
         }
       }
-
       setShowResultDialog(true);
     } catch (error) {
       console.error("Error checking guess:", error);
@@ -201,24 +209,24 @@ export default function GameView({ challenge }: GameViewProps) {
     correctAnswers: number,
     totalAnswers: number
   ) => {
-    if (user) {
+    if (user && token) {
       try {
         await fetch("/api/game/save", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            userId: user.id,
             correctAnswers,
             totalAnswers,
           }),
         });
+        await refreshUser();
       } catch (error) {
         console.error("Failed to save game results:", error);
       }
     }
-
     setShowGameOverDialog(true);
   };
 
@@ -248,6 +256,10 @@ export default function GameView({ challenge }: GameViewProps) {
 
   const toggleClue = () => {
     setShowSecondClue(!showSecondClue);
+  };
+
+  const handleAuthSuccess = () => {
+    setAuthDialogOpen(false);
   };
 
   const renderLives = () => {
@@ -294,6 +306,7 @@ export default function GameView({ challenge }: GameViewProps) {
           />
         </Map>
       </APIProvider>
+
       <div className="absolute top-4 left-4 flex flex-col gap-4 z-10">
         <Card className="w-80">
           <CardHeader>
@@ -321,9 +334,24 @@ export default function GameView({ challenge }: GameViewProps) {
                 {renderLives()}
               </div>
               {user && (
-                <p className="text-sm text-gray-500">
-                  Logged in as: {user.username}
-                </p>
+                <>
+                  <p className="text-sm text-gray-500">
+                    Logged in as: {user.username}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Last saved score: {user.score}
+                  </p>
+                </>
+              )}
+              {!isAuthenticated && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() => setAuthDialogOpen(true)}
+                >
+                  Login to save progress
+                </Button>
               )}
             </div>
           </CardContent>
@@ -344,9 +372,11 @@ export default function GameView({ challenge }: GameViewProps) {
             </CardHeader>
             <CardContent>
               <p className="text-lg font-medium">
-                {showSecondClue
-                  ? currentDestination.clues[1] || "No second clue available"
-                  : currentDestination.clues[0] || "No clue available"}
+                {currentDestination.clues[+showSecondClue]}
+              </p>
+              <p className="text-xs text-gray-500 mt-4">
+                Try to put the marker on the map within the boundaries of the
+                city!
               </p>
             </CardContent>
           </Card>
@@ -365,7 +395,6 @@ export default function GameView({ challenge }: GameViewProps) {
                 ? "Correct Answer! 🎉"
                 : "Incorrect Answer! 😢"}
             </DialogTitle>
-
             {currentDestination && guessResult === "incorrect" && (
               <DialogDescription>
                 The location was {currentDestination.city}, but you guessed{" "}
@@ -373,11 +402,9 @@ export default function GameView({ challenge }: GameViewProps) {
               </DialogDescription>
             )}
           </DialogHeader>
-
           {currentFunFact && (
             <p className="my-4 text-center">{currentFunFact}</p>
           )}
-
           <DialogFooter>
             <Button onClick={handleNextLocation} className="w-full">
               Next Challenge <ArrowRight size={16} className="ml-2" />
@@ -402,13 +429,13 @@ export default function GameView({ challenge }: GameViewProps) {
                   <div className="flex justify-center gap-6 mt-2">
                     <div className="text-center">
                       <p className="text-2xl font-bold text-green-500">
-                        {score.correct}
+                        {user?.score || 0}
                       </p>
                       <p className="text-sm text-gray-600">Correct</p>
                     </div>
                     <div className="text-center">
                       <p className="text-2xl font-bold text-red-500">
-                        {score.incorrect}
+                        {user?.totalAnswers || 0 - (user?.correctAnswers || 0)}
                       </p>
                       <p className="text-sm text-gray-600">Incorrect</p>
                     </div>
@@ -420,11 +447,16 @@ export default function GameView({ challenge }: GameViewProps) {
           <div className="flex flex-col gap-4 mt-4">
             {user && (
               <ChallengeShare
-                userName={user.username}
+                userId={user.id}
                 score={score.correct * 10}
                 correctAnswers={score.correct}
-                totalAnswers={score.correct + score.incorrect}
+                incorrectAnswers={score.incorrect}
               />
+            )}
+            {!isAuthenticated && (
+              <Button onClick={() => setAuthDialogOpen(true)} variant="outline">
+                Login to Share Challenge
+              </Button>
             )}
             <Button onClick={restartGame} variant="secondary">
               Play Again <RefreshCcw size={16} className="ml-2" />
@@ -432,6 +464,20 @@ export default function GameView({ challenge }: GameViewProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Login or Register</DialogTitle>
+            <DialogDescription>
+              Login or create an account to save your progress and challenge
+              friends!
+            </DialogDescription>
+          </DialogHeader>
+          <UserAuth onAuthSuccess={handleAuthSuccess} />
+        </DialogContent>
+      </Dialog>
+
       {challenge !== undefined && (
         <Dialog open={challengeDialogOpen}>
           <DialogContent className="sm:max-w-md" showCloseButton={false}>
@@ -464,7 +510,9 @@ export default function GameView({ challenge }: GameViewProps) {
               <Button
                 variant="secondary"
                 onClick={() => {
-                  router.push("/");
+                  router.push("/game");
+                  setChallengeDialogOpen(false);
+                  setChallenge(undefined);
                 }}
                 className="flex-1"
               >

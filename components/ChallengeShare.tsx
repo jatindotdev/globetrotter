@@ -1,7 +1,6 @@
 "use client";
 
 import { Share2 } from "lucide-react";
-import { useState } from "react";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -12,42 +11,30 @@ import {
 } from "./ui/dialog";
 
 interface ChallengeShareProps {
-  userName: string;
+  userId: string;
   score: number;
   correctAnswers: number;
-  totalAnswers: number;
+  incorrectAnswers: number;
 }
 
 export default function ChallengeShare({
-  userName,
+  userId,
   score,
   correctAnswers,
-  totalAnswers,
+  incorrectAnswers,
 }: ChallengeShareProps) {
-  const [shareLink, setShareLink] = useState<string>("");
-
   const generateShareLink = () => {
     const baseUrl = window.location.origin;
-
-    const challenge = {
-      userName,
-      score,
-      correctAnswers,
-      totalAnswers,
-      timestamp: new Date().toISOString(),
-    };
-
-    const encodedData = btoa(JSON.stringify(challenge));
-
-    const shareableUrl = `${baseUrl}/game?challenge=${encodedData}`;
-    setShareLink(shareableUrl);
+    const shareableUrl = `${baseUrl}/game?challenge=${encodeURIComponent(
+      userId
+    )}`;
 
     return shareableUrl;
   };
 
   const shareToWhatsApp = () => {
     const url = generateShareLink();
-    const whatsappText = `I scored ${score} points (${correctAnswers}/${totalAnswers} correct) on GlobeTrotter! Can you beat me? ${url}`;
+    const whatsappText = `I just played GlobeTrotter and scored ${score} points! Can you beat my score? Check it out here: ${url}`;
     window.open(
       `https://wa.me/?text=${encodeURIComponent(whatsappText)}`,
       "_blank"
@@ -71,16 +58,12 @@ export default function ChallengeShare({
           <DialogTitle>Share Your Score!</DialogTitle>
         </DialogHeader>
 
-        <div className="p-4 my-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold">
-              {userName}&apos;s Challenge
-            </h3>
-            <p className="text-sm mt-2">Score: {score} points</p>
-            <p className="text-sm">
-              Answered: {correctAnswers} correct out of {totalAnswers}
-            </p>
-          </div>
+        <div className="my-4 rounded-lg">
+          <img
+            src={`https://dynamic-og-image-generator.vercel.app/api/generate?title=Score+${score}+%28W+${correctAnswers}+-+L+${incorrectAnswers}%29&author=Jatin&websiteUrl=has+challenged+you%21&avatar=&theme=nightOwl`}
+            alt="Score Card"
+            className="rounded h-auto aspect-video w-md bg-muted"
+          />
         </div>
 
         <div className="flex flex-col gap-3">

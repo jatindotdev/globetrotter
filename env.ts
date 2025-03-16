@@ -5,6 +5,7 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.string().min(1),
     MAPS_BACKEND_API: z.string().min(1),
+    JWT_SECRET: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_MAPS_API: z.string().min(1),
@@ -13,5 +14,6 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     NEXT_PUBLIC_MAPS_API: process.env.NEXT_PUBLIC_MAPS_API,
     MAPS_BACKEND_API: process.env.MAPS_BACKEND_API,
+    JWT_SECRET: process.env.JWT_SECRET,
   },
 });

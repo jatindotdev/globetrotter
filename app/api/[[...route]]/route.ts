@@ -1,16 +1,15 @@
 import { env } from "@/env";
+import { createToken, verifyToken } from "@/lib/auth";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
-import { createHash } from "crypto";
+import { compare, hash } from "bcrypt";
 import { eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
 
 const app = new Hono().basePath("/api");
 
-function hashPassword(password: string): string {
-  return createHash("sha256").update(password).digest("hex");
-}
+const SALT_ROUNDS = 10;
 
 app.get("/geocode", async (c) => {
   const { lat, lng } = c.req.query();
@@ -91,11 +90,13 @@ app.post("/auth/register", async (c) => {
       return c.json({ error: "Username already exists" }, 409);
     }
 
+    const hashedPassword = await hash(password, SALT_ROUNDS);
+
     const [newUser] = await db
       .insert(schema.users)
       .values({
         username,
-        password: hashPassword(password),
+        password: hashedPassword,
         score: 0,
         correctAnswers: 0,
         totalAnswers: 0,
@@ -105,10 +106,16 @@ app.post("/auth/register", async (c) => {
         username: schema.users.username,
       });
 
+    const token = createToken({
+      id: newUser.id,
+      username: newUser.username,
+    });
+
     return c.json({
       message: "User registered successfully",
       id: newUser.id,
       username: newUser.username,
+      token,
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -129,18 +136,63 @@ app.post("/auth/login", async (c) => {
       where: eq(schema.users.username, username),
     });
 
-    if (!user || user.password !== hashPassword(password)) {
+    if (!user) {
       return c.json({ error: "Invalid username or password" }, 401);
     }
+
+    const passwordMatches = await compare(password, user.password);
+    if (!passwordMatches) {
+      return c.json({ error: "Invalid username or password" }, 401);
+    }
+
+    const token = createToken({
+      id: user.id,
+      username: user.username,
+    });
 
     return c.json({
       message: "Login successful",
       id: user.id,
       username: user.username,
+      token,
     });
   } catch (error) {
     console.error("Login error:", error);
     return c.json({ error: "Failed to authenticate" }, 500);
+  }
+});
+
+app.get("/auth/me", async (c) => {
+  try {
+    const token = c.req.header("Authorization")?.replace("Bearer ", "");
+    if (!token) {
+      return c.json({ error: "Not authenticated" }, 401);
+    }
+
+    const payload = verifyToken(token);
+    if (!payload) {
+      return c.json({ error: "Invalid token" }, 401);
+    }
+
+    const user = await db.query.users.findFirst({
+      where: eq(schema.users.id, payload.id),
+      columns: {
+        id: true,
+        username: true,
+        score: true,
+        correctAnswers: true,
+        totalAnswers: true,
+      },
+    });
+
+    if (!user) {
+      return c.json({ error: "User not found" }, 404);
+    }
+
+    return c.json(user);
+  } catch (error) {
+    console.error("Error fetching current user:", error);
+    return c.json({ error: "Failed to fetch user data" }, 500);
   }
 });
 
@@ -219,12 +271,29 @@ app.post("/destination/check", async (c) => {
 
 app.post("/game/save", async (c) => {
   try {
-    const body = await c.req.json();
-    const { userId, correctAnswers, totalAnswers } = body;
-
-    if (!userId) {
-      return c.json({ error: "User ID is required" }, 400);
+    const token = c.req.header("Authorization")?.replace("Bearer ", "");
+    if (!token) {
+      return c.json({ error: "Not authenticated" }, 401);
     }
+
+    const payload = verifyToken(token);
+    if (!payload) {
+      return c.json({ error: "Invalid token" }, 401);
+    }
+
+    const user = await db.query.users.findFirst({
+      where: eq(schema.users.id, payload.id),
+      columns: {
+        id: true,
+      },
+    });
+
+    if (!user) {
+      return c.json({ error: "User not found" }, 404);
+    }
+
+    const body = await c.req.json();
+    const { correctAnswers, totalAnswers } = body;
 
     await db
       .update(schema.users)
@@ -233,10 +302,10 @@ app.post("/game/save", async (c) => {
         correctAnswers: sql`${schema.users.correctAnswers} + ${correctAnswers}`,
         totalAnswers: sql`${schema.users.totalAnswers} + ${totalAnswers}`,
       })
-      .where(eq(schema.users.id, userId));
+      .where(eq(schema.users.id, user.id));
 
-    const user = await db.query.users.findFirst({
-      where: eq(schema.users.id, userId),
+    const userResp = await db.query.users.findFirst({
+      where: eq(schema.users.id, user.id),
       columns: {
         username: true,
         score: true,
@@ -247,7 +316,7 @@ app.post("/game/save", async (c) => {
 
     return c.json({
       message: "Game results saved",
-      user: user,
+      user: userResp,
     });
   } catch (error) {
     console.error("Error saving game results:", error);

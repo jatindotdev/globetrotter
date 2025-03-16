@@ -46,8 +46,8 @@ export function MarkerControl({
     <div className="relative">
       <AdvancedMarker position={guessMarker} />
       {guessMarker && (
-        <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2">
-          <div className="bg-white rounded-md shadow-lg w-md p-4">
+        <div className="absolute bottom-full mb-4 left-1/2 transform -translate-x-1/2">
+          <div className="bg-white rounded-md shadow-lg w-full p-4">
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
                 <h3 className="font-semibold text-muted-foreground">
@@ -64,6 +64,10 @@ export function MarkerControl({
                   </>
                 )}
               </div>
+              <p className="text-sm text-muted-foreground">
+                If your marker is inside the boundaries of the city, it will
+                count as a correct guess.
+              </p>
               <Button
                 disabled={isLoading}
                 onClick={() => {
