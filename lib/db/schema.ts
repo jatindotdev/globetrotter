@@ -1,5 +1,12 @@
 import type { InferSelectModel } from "drizzle-orm";
-import { pgTable, serial, text, uuid, varchar } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  primaryKey,
+  serial,
+  text,
+  uuid,
+  varchar,
+} from "drizzle-orm/pg-core";
 
 export const destinations = pgTable("destinations", {
   id: serial("id").primaryKey(),
@@ -13,6 +20,7 @@ export const clues = pgTable("clues", {
     .references(() => destinations.id)
     .notNull(),
   clue: text("clue").notNull(),
+  diffculty: varchar("difficulty", { length: 100 }).notNull(),
 });
 
 export const funFacts = pgTable("fun_facts", {
@@ -40,6 +48,18 @@ export const users = pgTable("users", {
   totalAnswers: serial("total_answers").default(0).notNull(),
   createdAt: varchar("created_at").notNull().default(new Date().toISOString()),
 });
+
+export const leaderboard = pgTable(
+  "leaderboard",
+  {
+    userId: uuid("userid")
+      .references(() => users.id)
+      .notNull(),
+    difficulty: varchar("difficulty", { length: 100 }).notNull(),
+    score: serial("score").default(0).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.difficulty] })]
+);
 
 export type Destinations = InferSelectModel<typeof destinations>;
 export type Clues = InferSelectModel<typeof clues>;

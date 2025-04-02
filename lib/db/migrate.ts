@@ -5,6 +5,7 @@ const initialData = [
   {
     city: "Paris",
     country: "France",
+    difficulty: "hard",
     clues: [
       "This city is home to a famous tower that sparkles every night.",
       "Known as the 'City of Love' and a hub for fashion and art.",
@@ -21,6 +22,7 @@ const initialData = [
   {
     city: "Tokyo",
     country: "Japan",
+    difficulty: "hard",
     clues: [
       "This city has the busiest pedestrian crossing in the world.",
       "You can visit an entire district dedicated to anime, manga, and gaming.",
@@ -37,6 +39,7 @@ const initialData = [
   {
     city: "New York",
     country: "USA",
+    difficulty: "hard",
     clues: [
       "Home to a green statue gifted by France in the 1800s.",
       "Nicknamed 'The Big Apple' and known for its Broadway theaters.",
@@ -53,6 +56,7 @@ const initialData = [
   {
     city: "Rome",
     country: "Italy",
+    difficulty: "medium",
     clues: [
       "This city is built on seven hills and was once the center of a vast empire.",
       "Home to an ancient amphitheater where gladiators once fought.",
@@ -69,6 +73,7 @@ const initialData = [
   {
     city: "Sydney",
     country: "Australia",
+    difficulty: "medium",
     clues: [
       "This city is famous for its iconic opera house with sail-shaped roofs.",
       "Home to one of the world's most famous harbors and a large steel arch bridge nicknamed 'The Coathanger'.",
@@ -85,6 +90,7 @@ const initialData = [
   {
     city: "Kathmandu",
     country: "Nepal",
+    difficulty: "medium",
     clues: [
       "Known for its ancient temples and vibrant culture.",
       "Located in a valley surrounded by the Himalayas.",
@@ -101,6 +107,7 @@ const initialData = [
   {
     city: "Mumbai",
     country: "India",
+    difficulty: "easy",
     clues: [
       "The financial capital of India.",
       "Known for its Bollywood film industry and street food.",
@@ -117,6 +124,7 @@ const initialData = [
   {
     city: "Nairobi",
     country: "Kenya",
+    difficulty: "easy",
     clues: [
       "The safari capital of Africa.",
       "Known for its wildlife and national parks.",
@@ -133,6 +141,7 @@ const initialData = [
   {
     city: "Accra",
     country: "Ghana",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Ghana.",
       "Known for its beaches and vibrant culture.",
@@ -149,6 +158,7 @@ const initialData = [
   {
     city: "Lagos",
     country: "Nigeria",
+    difficulty: "easy",
     clues: [
       "The largest city in Nigeria.",
       "Known for its music scene and nightlife.",
@@ -165,6 +175,7 @@ const initialData = [
   {
     city: "Addis Ababa",
     country: "Ethiopia",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Ethiopia.",
       "Known for its historical sites and coffee culture.",
@@ -181,6 +192,7 @@ const initialData = [
   {
     city: "Casablanca",
     country: "Morocco",
+    difficulty: "easy",
     clues: [
       "The largest city in Morocco.",
       "Known for its Art Deco architecture and the Hassan II Mosque.",
@@ -197,6 +209,7 @@ const initialData = [
   {
     city: "Algiers",
     country: "Algeria",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Algeria.",
       "Known for its white buildings and Mediterranean coastline.",
@@ -213,6 +226,7 @@ const initialData = [
   {
     city: "Tunis",
     country: "Tunisia",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Tunisia.",
       "Known for its Medina and Bardo Museum.",
@@ -229,6 +243,7 @@ const initialData = [
   {
     city: "Tripoli",
     country: "Libya",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Libya.",
       "Known for its historical sites and Mediterranean coastline.",
@@ -245,6 +260,7 @@ const initialData = [
   {
     city: "Khartoum",
     country: "Sudan",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Sudan.",
       "Located at the confluence of the White Nile and Blue Nile.",
@@ -261,6 +277,7 @@ const initialData = [
   {
     city: "Kinshasa",
     country: "Democratic Republic of the Congo",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of the Democratic Republic of the Congo.",
       "Known for its music scene and vibrant culture.",
@@ -277,6 +294,7 @@ const initialData = [
   {
     city: "Luanda",
     country: "Angola",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Angola.",
       "Known for its beaches and Portuguese colonial architecture.",
@@ -293,6 +311,7 @@ const initialData = [
   {
     city: "Lusaka",
     country: "Zambia",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Zambia.",
       "Known for its markets and wildlife.",
@@ -309,6 +328,7 @@ const initialData = [
   {
     city: "Harare",
     country: "Zimbabwe",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Zimbabwe.",
       "Known for its parks and gardens.",
@@ -325,6 +345,7 @@ const initialData = [
   {
     city: "Gaborone",
     country: "Botswana",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Botswana.",
       "Known for its wildlife and diamond industry.",
@@ -341,6 +362,7 @@ const initialData = [
   {
     city: "Windhoek",
     country: "Namibia",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Namibia.",
       "Known for its German colonial architecture and wildlife.",
@@ -357,6 +379,7 @@ const initialData = [
   {
     city: "Mogadishu",
     country: "Somalia",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Somalia.",
       "Known for its beaches and historical sites.",
@@ -373,6 +396,7 @@ const initialData = [
   {
     city: "Dakar",
     country: "Senegal",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Senegal.",
       "Known for its music scene and beaches.",
@@ -389,6 +413,7 @@ const initialData = [
   {
     city: "Bamako",
     country: "Mali",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Mali.",
       "Located on the Niger River.",
@@ -405,6 +430,7 @@ const initialData = [
   {
     city: "Apia",
     country: "Samoa",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Samoa.",
       "Known for its beaches and Samoan culture.",
@@ -421,6 +447,7 @@ const initialData = [
   {
     city: "Nuku'alofa",
     country: "Tonga",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Tonga.",
       "Known for its royal palace and Tongan culture.",
@@ -437,6 +464,7 @@ const initialData = [
   {
     city: "Yaren",
     country: "Nauru",
+    difficulty: "easy",
     clues: [
       "The de facto capital of Nauru.",
       "Known for its phosphate mining and small size.",
@@ -453,6 +481,7 @@ const initialData = [
   {
     city: "South Tarawa",
     country: "Kiribati",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Kiribati.",
       "Known for its atolls and beaches.",
@@ -469,6 +498,7 @@ const initialData = [
   {
     city: "Funafuti",
     country: "Tuvalu",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of Tuvalu.",
       "Known for its atolls and small size.",
@@ -485,6 +515,7 @@ const initialData = [
   {
     city: "Majuro",
     country: "Marshall Islands",
+    difficulty: "easy",
     clues: [
       "The capital and largest city of the Marshall Islands.",
       "Known for its atolls and beaches.",
@@ -501,6 +532,7 @@ const initialData = [
   {
     city: "Palikir",
     country: "Federated States of Micronesia",
+    difficulty: "easy",
     clues: [
       "The capital of the Federated States of Micronesia.",
       "Known for its lush landscapes and waterfalls.",
@@ -517,6 +549,7 @@ const initialData = [
   {
     city: "Yamoussoukro",
     country: "Ivory Coast",
+    difficulty: "easy",
     clues: [
       "The political capital of Ivory Coast.",
       "Known for its basilica and modern architecture.",
@@ -533,6 +566,7 @@ const initialData = [
   {
     city: "Abuja",
     country: "Nigeria",
+    difficulty: "easy",
     clues: [
       "The capital of Nigeria.",
       "Known for its modern architecture and parks.",
@@ -549,6 +583,7 @@ const initialData = [
   {
     city: "Dodoma",
     country: "Tanzania",
+    difficulty: "easy",
     clues: [
       "The capital of Tanzania.",
       "Known for its wine region and historical sites.",
@@ -565,6 +600,7 @@ const initialData = [
   {
     city: "Pretoria",
     country: "South Africa",
+    difficulty: "easy",
     clues: [
       "The administrative capital of South Africa.",
       "Known for its jacaranda trees and historical buildings.",
@@ -581,6 +617,7 @@ const initialData = [
   {
     city: "Bern",
     country: "Switzerland",
+    difficulty: "easy",
     clues: [
       "The de facto capital of Switzerland.",
       "Known for its medieval architecture and Zytglogge astronomical clock.",
@@ -597,6 +634,7 @@ const initialData = [
   {
     city: "Vaduz",
     country: "Liechtenstein",
+    difficulty: "easy",
     clues: [
       "The capital of Liechtenstein.",
       "Known for its castle and alpine scenery.",
@@ -613,6 +651,7 @@ const initialData = [
   {
     city: "Luxembourg City",
     country: "Luxembourg",
+    difficulty: "easy",
     clues: [
       "The capital of Luxembourg.",
       "Known for its medieval architecture and fortifications.",
@@ -629,6 +668,7 @@ const initialData = [
   {
     city: "Monaco",
     country: "Monaco",
+    difficulty: "easy",
     clues: [
       "The capital of Monaco.",
       "Known for its luxury and Monte Carlo Casino.",
@@ -645,6 +685,7 @@ const initialData = [
   {
     city: "San Marino",
     country: "San Marino",
+    difficulty: "easy",
     clues: [
       "The capital of San Marino.",
       "Known for its medieval architecture and Mount Titano.",
@@ -661,6 +702,7 @@ const initialData = [
   {
     city: "City of Victoria",
     country: "Seychelles",
+    difficulty: "easy",
     clues: [
       "The capital of Seychelles.",
       "Known for its beaches and Creole culture.",
@@ -677,6 +719,7 @@ const initialData = [
   {
     city: "Port Louis",
     country: "Mauritius",
+    difficulty: "easy",
     clues: [
       "The capital of Mauritius.",
       "Known for its beaches and multicultural society.",
@@ -693,6 +736,7 @@ const initialData = [
   {
     city: "Saint-Denis",
     country: "Réunion",
+    difficulty: "easy",
     clues: [
       "The capital of Réunion.",
       "Known for its beaches and Creole culture.",
@@ -709,6 +753,7 @@ const initialData = [
   {
     city: "Mamoudzou",
     country: "Mayotte",
+    difficulty: "easy",
     clues: [
       "The capital of Mayotte.",
       "Known for its beaches and coral reefs.",
@@ -725,6 +770,7 @@ const initialData = [
   {
     city: "Castries",
     country: "Saint Lucia",
+    difficulty: "easy",
     clues: [
       "The capital of Saint Lucia.",
       "Known for its harbor and Creole culture.",
@@ -741,6 +787,7 @@ const initialData = [
   {
     city: "Kingstown",
     country: "Saint Vincent and the Grenadines",
+    difficulty: "easy",
     clues: [
       "The capital of Saint Vincent and the Grenadines.",
       "Known for its botanical gardens and beaches.",
@@ -757,6 +804,7 @@ const initialData = [
   {
     city: "Saint George's",
     country: "Grenada",
+    difficulty: "easy",
     clues: [
       "The capital of Grenada.",
       "Known for its spice production and beaches.",
@@ -773,6 +821,7 @@ const initialData = [
   {
     city: "Bridgetown",
     country: "Barbados",
+    difficulty: "easy",
     clues: [
       "The capital of Barbados.",
       "Known for its beaches and rum distilleries.",
@@ -789,6 +838,7 @@ const initialData = [
   {
     city: "Roseau",
     country: "Dominica",
+    difficulty: "easy",
     clues: [
       "The capital of Dominica.",
       "Known for its natural hot springs and rainforests.",
@@ -805,6 +855,7 @@ const initialData = [
   {
     city: "Basseterre",
     country: "Saint Kitts and Nevis",
+    difficulty: "easy",
     clues: [
       "The capital of Saint Kitts and Nevis.",
       "Known for its beaches and historical sites.",
@@ -821,6 +872,7 @@ const initialData = [
   {
     city: "Saint John's",
     country: "Antigua and Barbuda",
+    difficulty: "easy",
     clues: [
       "The capital of Antigua and Barbuda.",
       "Known for its beaches and sailing.",
@@ -837,6 +889,7 @@ const initialData = [
   {
     city: "The Valley",
     country: "Anguilla",
+    difficulty: "easy",
     clues: [
       "The capital of Anguilla.",
       "Known for its beaches and coral reefs.",
@@ -853,6 +906,7 @@ const initialData = [
   {
     city: "Road Town",
     country: "British Virgin Islands",
+    difficulty: "easy",
     clues: [
       "The capital of the British Virgin Islands.",
       "Known for its sailing and beaches.",
@@ -869,6 +923,7 @@ const initialData = [
   {
     city: "Philipsburg",
     country: "Sint Maarten",
+    difficulty: "easy",
     clues: [
       "The capital of Sint Maarten.",
       "Known for its beaches and duty-free shopping.",
@@ -885,6 +940,7 @@ const initialData = [
   {
     city: "Marigot",
     country: "Saint Martin",
+    difficulty: "easy",
     clues: [
       "The capital of Saint Martin.",
       "Known for its French culture and beaches.",
@@ -901,6 +957,7 @@ const initialData = [
   {
     city: "Gustavia",
     country: "Saint Barthélemy",
+    difficulty: "easy",
     clues: [
       "The capital of Saint Barthélemy.",
       "Known for its luxury and beaches.",
@@ -917,6 +974,7 @@ const initialData = [
   {
     city: "Oranjestad",
     country: "Aruba",
+    difficulty: "easy",
     clues: [
       "The capital of Aruba.",
       "Known for its beaches and Dutch colonial architecture.",
@@ -933,6 +991,7 @@ const initialData = [
   {
     city: "Willemstad",
     country: "Curaçao",
+    difficulty: "easy",
     clues: [
       "The capital of Curaçao.",
       "Known for its colorful Dutch colonial architecture and beaches.",
@@ -949,6 +1008,7 @@ const initialData = [
   {
     city: "Kralendijk",
     country: "Bonaire",
+    difficulty: "easy",
     clues: ["The capital of Bonaire.", "Known for its diving and beaches."],
     funFacts: [
       "This city is located on the island of Bonaire.",
@@ -962,6 +1022,7 @@ const initialData = [
   {
     city: "Havana",
     country: "Cuba",
+    difficulty: "easy",
     clues: [
       "The capital of Cuba.",
       "Known for its vintage cars and Cuban culture.",
@@ -978,6 +1039,7 @@ const initialData = [
   {
     city: "Nassau",
     country: "Bahamas",
+    difficulty: "easy",
     clues: [
       "The capital of the Bahamas.",
       "Known for its beaches and resorts.",
@@ -994,6 +1056,7 @@ const initialData = [
   {
     city: "Kingston",
     country: "Jamaica",
+    difficulty: "easy",
     clues: [
       "The capital of Jamaica.",
       "Known for its reggae music and beaches.",
@@ -1010,6 +1073,7 @@ const initialData = [
   {
     city: "Port-au-Prince",
     country: "Haiti",
+    difficulty: "easy",
     clues: ["The capital of Haiti.", "Known for its art and culture."],
     funFacts: [
       "This city is located on the island of Hispaniola.",
@@ -1023,6 +1087,7 @@ const initialData = [
   {
     city: "Santo Domingo",
     country: "Dominican Republic",
+    difficulty: "easy",
     clues: [
       "The capital of the Dominican Republic.",
       "Known for its colonial history and beaches.",
@@ -1039,6 +1104,7 @@ const initialData = [
   {
     city: "San Juan",
     country: "Puerto Rico",
+    difficulty: "easy",
     clues: [
       "The capital of Puerto Rico.",
       "Known for its beaches and historical sites.",
@@ -1055,6 +1121,7 @@ const initialData = [
   {
     city: "Charlotte Amalie",
     country: "United States Virgin Islands",
+    difficulty: "easy",
     clues: [
       "The capital of the United States Virgin Islands.",
       "Known for its beaches and duty-free shopping.",
@@ -1071,6 +1138,7 @@ const initialData = [
   {
     city: "Hamilton",
     country: "Bermuda",
+    difficulty: "easy",
     clues: [
       "The capital of Bermuda.",
       "Known for its pink sand beaches and British culture.",
@@ -1087,6 +1155,7 @@ const initialData = [
   {
     city: "Ottawa",
     country: "Canada",
+    difficulty: "easy",
     clues: [
       "The capital of Canada.",
       "Known for its historical sites and Rideau Canal.",
@@ -1103,6 +1172,7 @@ const initialData = [
   {
     city: "Washington, D.C.",
     country: "USA",
+    difficulty: "easy",
     clues: [
       "The capital of the United States.",
       "Known for its monuments and museums.",
@@ -1119,6 +1189,7 @@ const initialData = [
   {
     city: "Mexico City",
     country: "Mexico",
+    difficulty: "easy",
     clues: [
       "One of the largest and most populous cities in the world.",
       "Known for its rich history, culture, and cuisine.",
@@ -1135,6 +1206,7 @@ const initialData = [
   {
     city: "Belmopan",
     country: "Belize",
+    difficulty: "easy",
     clues: [
       "The capital of Belize.",
       "Known for its Mayan ruins and rainforests.",
@@ -1151,6 +1223,7 @@ const initialData = [
   {
     city: "Guatemala City",
     country: "Guatemala",
+    difficulty: "easy",
     clues: [
       "The capital of Guatemala.",
       "Known for its Mayan ruins and colonial architecture.",
@@ -1167,6 +1240,7 @@ const initialData = [
   {
     city: "San Salvador",
     country: "El Salvador",
+    difficulty: "easy",
     clues: [
       "The capital of El Salvador.",
       "Known for its volcanoes and beaches.",
@@ -1202,7 +1276,8 @@ async function main() {
     await sql`CREATE TABLE IF NOT EXISTS clues (
       id SERIAL PRIMARY KEY,
       destination_id INTEGER NOT NULL REFERENCES destinations(id),
-      clue TEXT NOT NULL
+      clue TEXT NOT NULL,
+      difficulty VARCHAR(100) NOT NULL
     )`;
 
     await sql`CREATE TABLE IF NOT EXISTS fun_facts (
@@ -1227,6 +1302,13 @@ async function main() {
       created_at VARCHAR NOT NULL DEFAULT current_timestamp
     )`;
 
+    await sql`CREATE TABLE IF NOT EXISTS leaderboard (
+      userId UUID NOT NULL REFERENCES users(id),
+      difficulty VARCHAR(100) NOT NULL,
+      score INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY("userid","difficulty")
+    )`;
+
     console.log("Schema created successfully");
 
     console.log("Seeding initial data...");
@@ -1244,6 +1326,7 @@ async function main() {
         await db.insert(schema.clues).values({
           destinationId: newDestination.id,
           clue: clueText,
+          diffculty: destination.difficulty,
         });
       }
 

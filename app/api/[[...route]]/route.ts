@@ -3,7 +3,7 @@ import { createToken, verifyToken } from "@/lib/auth";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 import { compare, hash } from "bcrypt";
-import { eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
 
@@ -198,6 +198,26 @@ app.get("/auth/me", async (c) => {
 
 app.get("/destination/random", async (c) => {
   try {
+    const { difficulty } = c.req.query();
+
+    if (!difficulty) {
+      return c.json(
+        { error: "No difficulty set." },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (!["easy", "medium", "hard"].includes(difficulty.toLowerCase())) {
+      return c.json(
+        { error: "difficulty can be one of easy, medium, hard." },
+        {
+          status: 400,
+        }
+      );
+    }
+
     const destination = await db.query.destinations.findFirst({
       orderBy: sql`random()`,
     });
@@ -207,7 +227,10 @@ app.get("/destination/random", async (c) => {
     }
 
     const clues = await db.query.clues.findMany({
-      where: eq(schema.clues.destinationId, destination.id),
+      where: and(
+        eq(schema.clues.destinationId, destination.id),
+        eq(schema.clues.diffculty, difficulty)
+      ),
       orderBy: sql`random()`,
       limit: 2,
     });
@@ -265,6 +288,41 @@ app.post("/destination/check", async (c) => {
     });
   } catch (error) {
     console.error("Error checking guess:", error);
+    return c.json({ error: "Failed to check guess" }, 500);
+  }
+});
+
+app.get("/leaderboard/:difficulty", async (c) => {
+  try {
+    const { difficulty } = c.req.param();
+
+    if (!difficulty) {
+      return c.json(
+        { error: "No difficulty set." },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (!["easy", "medium", "hard"].includes(difficulty.toLowerCase())) {
+      return c.json(
+        { error: "difficulty can be one of easy, medium, hard." },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const users = await db.query.leaderboard.findMany({
+      where: eq(schema.leaderboard.difficulty, difficulty),
+      limit: 10,
+      orderBy: desc(schema.leaderboard.score),
+    });
+
+    return c.json({ users });
+  } catch (e) {
+    console.error("Error checking guess:", e);
     return c.json({ error: "Failed to check guess" }, 500);
   }
 });
